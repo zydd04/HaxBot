@@ -5,23 +5,34 @@ ball_img = cv2.imread('data/ball.png', cv2.IMREAD_COLOR)
 field_img = cv2.imread('data/cv_data.png', cv2.IMREAD_COLOR)
 ennemy_img = cv2.imread('data/ennemy-blue.png', cv2.IMREAD_COLOR)
 teamate_img = cv2.imread('data/teamate-red.png', cv2.IMREAD_COLOR)
-
+t_post = cv2.imread('data/post-red.png', cv2.IMREAD_COLOR)
+e_post = cv2.imread('data/post-blue.png', cv2.IMREAD_COLOR)
 
 obj_dict = {
     "Ball": {
         "img": ball_img,
-        "threshold": 0.80,
+        "threshold": 0.60,
         "color": (0, 255, 255)
     },
     "Ennemy": {
         "img": ennemy_img,
-        "threshold": 0.80,
+        "threshold": 0.70,
         "color": (0, 0, 255)
     },
     "Team": {
         "img": teamate_img,
-        "threshold": 0.80,
+        "threshold": 0.70,
         "color": (255, 0, 0)
+    },
+    "Team Post": {
+            "img": t_post,
+            "threshold": 0.90,
+            "color": (255, 0, 0)
+    },
+    "Ennemy Post": {
+            "img": e_post,
+            "threshold": 0.90,
+            "color": (0, 0, 255)
     }
 }
 
@@ -59,11 +70,10 @@ for obj, cfg in obj_dict.items():
         (text_w, text_h), baseline = cv2.getTextSize(label_text, font, font_scale, font_thickness)
 
         text_y = y - 6 if y - 6 > text_h else y + box_h + text_h + 6
-
-        cv2.rectangle(field_img, (x, text_y - text_h - baseline), (x + text_w, text_y + baseline), box_color, -1)
         
         cv2.putText(field_img, label_text, (x, text_y), font, font_scale, text_color, font_thickness, cv2.LINE_AA)
-
+cv2.namedWindow('Detection', cv2.WINDOW_NORMAL)
+cv2.resizeWindow('Detection', 1280, 720)
 cv2.imshow('Detection', field_img)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
