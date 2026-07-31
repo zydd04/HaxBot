@@ -1,15 +1,23 @@
 import cv2
 import numpy as np
 from time import time
+import pygetwindow as gw
 import dxcam
 
 camera = dxcam.create()
-frame = camera.grab()  
 
+target_window = "HaxBall Play — Mozilla Firefox"
+found = True
+try:
+    window = gw.getWindowsWithTitle(target_window)[0]
+except:
+    found = False
+    print(f"Window: {target_window} Not Found.\n Please go to the window first then run the program.")
+    
 camera.start(target_fps=60)  
 loopt = time()
 
-while True:
+while True and found:
     frame = camera.get_latest_frame()
     if frame is not None:
         cv2.imshow("Video Capture", cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))
@@ -19,6 +27,7 @@ while True:
         camera.stop()
         cv2.destroyAllWindows()
         break
+
 
 """
 Using ImageGrab (Worse FPS):
