@@ -1,0 +1,6 @@
+gym==0.26.2
+torch==2.10.0
+numpy==2.2.6
+pyautogui==0.9.54
+opencv-python==4.13.0.92
+pillow==11.3.0
