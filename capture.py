@@ -1,4 +1,5 @@
 import ctypes
+import cv2
 import numpy as np
 import win32gui
 import win32ui
@@ -7,69 +8,98 @@ PW_RENDERFULLCONTENT = 2
 
 
 def find_window_handle(title_substring: str):
-    """Return the hwnd of the first visible window whose title contains
-    title_substring (case-insensitive), or None if not found."""
     matches = []
-
-    def _enum_handler(hwnd, _):
+    def enum_handler(hwnd, _):
         if win32gui.IsWindowVisible(hwnd):
             title = win32gui.GetWindowText(hwnd)
             if title_substring.lower() in title.lower():
                 matches.append(hwnd)
 
-    win32gui.EnumWindows(_enum_handler, None)
+    win32gui.EnumWindows(enum_handler, None)
+
     return matches[0] if matches else None
 
 
 class WindowCapture:
-    """Captures a window's client area as a BGR numpy array on demand."""
 
-    def __init__(self, title_substring: str):
-        self.title_substring = title_substring
-        self.hwnd = find_window_handle(title_substring)
+    def __init__(self,window_title="HaxBall",crop=(485, 260, 1450, 720),resize=None,):
+        self.window_title = window_title
+        self.crop = crop
+        self.resize = resize
+
+        self.hwnd = None
+        self.refresh_window()
+
+    def refresh_window(self):
+
+        self.hwnd = find_window_handle(self.window_title)
+
         if self.hwnd is None:
             raise RuntimeError(
-                f"No window found matching '{title_substring}'. "
-                "Please open it first, then run the program."
+                f"Cannot find window containing '{self.window_title}'"
             )
 
     def get_frame(self):
-        """Return the specified (485, 260) to (1430, 700) sub-box from the window."""
-        bx, by = 485, 260
-        bwidth = 1450 - 485  # 945 pixels
-        bheight = 720 - 260  # 440 pixels
 
+        if self.hwnd is None or not win32gui.IsWindow(self.hwnd):
+            self.refresh_window()
         left, top, right, bottom = win32gui.GetClientRect(self.hwnd)
-        win_width, win_height = right - left, bottom - top
-        if win_width <= 0 or win_height <= 0:
+
+        width = right - left
+        height = bottom - top
+
+        if width <= 0 or height <= 0:
             return None
 
-        hwnd_dc = win32gui.GetWindowDC(self.hwnd)
-        mfc_dc = win32ui.CreateDCFromHandle(hwnd_dc)
-        save_dc = mfc_dc.CreateCompatibleDC()
+        hwnd_dc = None
+        mfc_dc = None
+        save_dc = None
+        bitmap = None
 
-        save_bitmap = win32ui.CreateBitmap()
-        save_bitmap.CreateCompatibleBitmap(mfc_dc, win_width, win_height)
-        save_dc.SelectObject(save_bitmap)
+        try:
 
-        ctypes.windll.user32.PrintWindow(self.hwnd, save_dc.GetSafeHdc(), PW_RENDERFULLCONTENT)
+            hwnd_dc = win32gui.GetWindowDC(self.hwnd)
+            mfc_dc = win32ui.CreateDCFromHandle(hwnd_dc)
+            save_dc = mfc_dc.CreateCompatibleDC()
+            bitmap = win32ui.CreateBitmap()
+            bitmap.CreateCompatibleBitmap(mfc_dc,width,height)
+            save_dc.SelectObject(bitmap)
 
-        bmp_info = save_bitmap.GetInfo()
-        bmp_bits = save_bitmap.GetBitmapBits(True)
+            ctypes.windll.user32.PrintWindow(
+                self.hwnd,
+                save_dc.GetSafeHdc(),
+                PW_RENDERFULLCONTENT
+            )
 
-        frame = np.frombuffer(bmp_bits, dtype="uint8")
-        frame.shape = (bmp_info["bmHeight"], bmp_info["bmWidth"], 4)
-        frame = np.ascontiguousarray(frame[:, :, :3])  # BGRA -> BGR
+            bmp_info = bitmap.GetInfo()
 
-        win32gui.DeleteObject(save_bitmap.GetHandle())
-        save_dc.DeleteDC()
-        mfc_dc.DeleteDC()
-        win32gui.ReleaseDC(self.hwnd, hwnd_dc)
+            bmp_bits = bitmap.GetBitmapBits(True)
 
-        bx = max(0, min(bx, frame.shape[1]))
-        by = max(0, min(by, frame.shape[0]))
-        bx1 = min(bx + bwidth, frame.shape[1])
-        by1 = min(by + bheight, frame.shape[0])
-        frame = frame[by:by1, bx:bx1]
+            frame = np.frombuffer(bmp_bits,dtype=np.uint8)
+            frame.shape = (bmp_info["bmHeight"],bmp_info["bmWidth"],4)
+            frame = frame[:, :, :3]
+            x0, y0, x1, y1 = self.crop
+            frame = frame[y0:y1, x0:x1]
+            frame = np.ascontiguousarray(frame)
 
-        return frame
+            if self.resize is not None:
+                frame = cv2.resize(frame,self.resize,interpolation=cv2.INTER_AREA)
+            return frame
+
+        except Exception:
+
+            return None
+
+        finally:
+
+            if bitmap is not None:
+                win32gui.DeleteObject(bitmap.GetHandle())
+
+            if save_dc is not None:
+                save_dc.DeleteDC()
+
+            if mfc_dc is not None:
+                mfc_dc.DeleteDC()
+
+            if hwnd_dc is not None:
+                win32gui.ReleaseDC(self.hwnd, hwnd_dc)
