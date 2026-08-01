@@ -4,17 +4,15 @@ from time import time
 import pygetwindow as gw
 import dxcam
 
-ball_img = cv2.imread('data/ball.png', cv2.IMREAD_COLOR)
-ennemy_img = cv2.imread('data/ennemy.png', cv2.IMREAD_COLOR)
-teamate_img = cv2.imread('data/team.png', cv2.IMREAD_COLOR)
-t_post = cv2.imread('data/post-blue.png', cv2.IMREAD_COLOR)
-e_post = cv2.imread('data/post-red.png', cv2.IMREAD_COLOR)
-player = cv2.imread('data/player.png', cv2.IMREAD_COLOR)
+ball_img = cv2.imread('data/ball1.png', cv2.IMREAD_COLOR)
+#ennemy_img = cv2.imread('data/ennemy.png', cv2.IMREAD_COLOR)
+#teamate_img = cv2.imread('data/team.png', cv2.IMREAD_COLOR)
+t_post = cv2.imread('data/not_here.png', cv2.IMREAD_COLOR)
+e_post = cv2.imread('data/score_here.png', cv2.IMREAD_COLOR)
+player = cv2.imread('data/player1.png', cv2.IMREAD_COLOR)
 
 obj_dict = {
-    "Ball": {"img": ball_img, "threshold": 0.70, "color": (0, 255, 255)},
-    "Ennemy": {"img": ennemy_img, "threshold": 0.70, "color": (255, 0, 0)},
-    "Team": {"img": teamate_img, "threshold": 0.70, "color": (0, 0, 255)},
+    "Ball": {"img": ball_img, "threshold": 0.70, "color": (255, 255, 255)},
     "Team Post": {"img": t_post, "threshold": 0.90, "color": (0, 0, 255)},
     "Ennemy Post": {"img": e_post, "threshold": 0.90, "color": (255, 0, 0)},
     "player": {"img": player, "threshold": 0.70, "color": (0, 0, 255)},
@@ -81,7 +79,7 @@ def main():
     loopt = time()
 
     cv2.namedWindow('Detection', cv2.WINDOW_NORMAL)
-    cv2.resizeWindow('Detection', 1800, 900)
+    cv2.resizeWindow('Detection', 980, 500)
 
     try:
         while True:
