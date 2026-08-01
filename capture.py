@@ -1,6 +1,5 @@
 import ctypes
 import numpy as np
-import win32con
 import win32gui
 import win32ui
 
@@ -37,8 +36,8 @@ class WindowCapture:
     def get_frame(self):
         """Return the specified (485, 260) to (1430, 700) sub-box from the window."""
         bx, by = 485, 260
-        bwidth = 1440 - 485  # 945 pixels
-        bheight = 710 - 260  # 440 pixels
+        bwidth = 1450 - 485  # 945 pixels
+        bheight = 720 - 260  # 440 pixels
 
         left, top, right, bottom = win32gui.GetClientRect(self.hwnd)
         win_width, win_height = right - left, bottom - top
