@@ -12,8 +12,8 @@ e_post = cv2.imread('data/post-red.png', cv2.IMREAD_COLOR)
 player = cv2.imread('data/player.png', cv2.IMREAD_COLOR)
 
 obj_dict = {
-    "Ball": {"img": ball_img, "threshold": 0.60, "color": (0, 255, 255)},
-    "Ennemy": {"img": ennemy_img, "threshold": 0.60, "color": (255, 0, 0)},
+    "Ball": {"img": ball_img, "threshold": 0.70, "color": (0, 255, 255)},
+    "Ennemy": {"img": ennemy_img, "threshold": 0.70, "color": (255, 0, 0)},
     "Team": {"img": teamate_img, "threshold": 0.70, "color": (0, 0, 255)},
     "Team Post": {"img": t_post, "threshold": 0.90, "color": (0, 0, 255)},
     "Ennemy Post": {"img": e_post, "threshold": 0.90, "color": (255, 0, 0)},
